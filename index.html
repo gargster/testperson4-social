@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A personal, Git-published social feed.">
+  <title>Social feed</title>
+  <link rel="stylesheet" href="./style.css">
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="./" aria-label="Home">social<span>.</span></a>
+      <p class="site-label">A personal, Git-published feed</p>
+    </div>
+  </header>
+
+  <main class="page-layout">
+    <section class="profile-card" aria-labelledby="profile-name">
+      <p class="eyebrow">PROFILE</p>
+      <h1 id="profile-name">Loading profile…</h1>
+      <p id="profile-handle" class="profile-handle"></p>
+      <p id="profile-bio" class="profile-bio"></p>
+      <a id="repository-link" class="repository-link" hidden>Source repository <span aria-hidden="true">↗</span></a>
+    </section>
+
+    <section class="feed-section" aria-labelledby="feed-title">
+      <div class="feed-heading">
+        <div>
+          <p class="eyebrow">PUBLICATIONS</p>
+          <h2 id="feed-title">Feed</h2>
+        </div>
+        <label class="filter-control" for="feed-filter">
+          <span class="visually-hidden">Filter feed</span>
+          <select id="feed-filter" disabled>
+            <option value="all">All posts</option>
+            <option value="following">Followed authors</option>
+          </select>
+        </label>
+      </div>
+
+      <p id="feed-status" class="feed-status" role="status" aria-live="polite">Loading feed…</p>
+      <div id="post-list" class="post-list"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Published from a Git repository</p>
+  </footer>
+</body>
+</html>
