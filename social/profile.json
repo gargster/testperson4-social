@@ -1,9 +1,9 @@
 {
   "publicKey": "ed25519:5f0bb802174a3026f6f5c566a6dbcdc600654c96f762876b4ac0f260399f5e76",
   "handle": "testperson4.social",
-  "repoURL": null,
+  "repoURL": "https://github.com/gargster/testperson4-social.git",
   "displayName": "TestPerson4",
   "bio": "Test 4",
   "created": "2026-10-06T05:57:38.225441Z",
-  "signature": "Du5YNEHuCSOhHb3UzaPlOpeyKerZc7pfc3Ct5m1B5EeBEVT/o98SzWPG3Z26pLxWKDsUvOPQ59T5mr41glPtDw=="
+  "signature": "b7EWqdcRDUENIKMwY/5y2TlpEUvXczY6/vP9yDXRTa7QdU8WZgNi+T2Znu5kHlzbOVSF83noleng8gRmPwnJBA=="
 }
