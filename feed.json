@@ -13,9 +13,31 @@
     "ed25519:c228e14ec05bb967c8664776e46f9a22c738e924bfe5211974e7bc9f078103ba": "Canonical",
     "ed25519:189c39f67de223e961d8fd9c075d2945b3062ab7480f33386956cd81c32ace37": "TestPerson1",
     "ed25519:57873577004887bfa9a0b8f51b301cb6416c04808f111bae13e0e48fec11fee3": "TestPerson2",
-    "ed25519:d58c64edefc76f350720d80a9db27794cd3520b90b2aed90cdb6fa1111efa838": "TestPerson3"
+    "ed25519:d58c64edefc76f350720d80a9db27794cd3520b90b2aed90cdb6fa1111efa838": "TestPerson3",
+    "ed25519:50fcefe2b0c66b12fc627f132eb391fe2de68e508fc7b67714ad82af77fc3952": "Alice",
+    "ed25519:5e7327ca95099247915583fbbb4e4bcc187089adc830d7fc5d132cff3b417a04": "Bob",
+    "ed25519:10545b4c9d9e27e255ef570b3cafabc3d1ae39ece5dd72d8f75e44cc1dff453f": "Charlie",
+    "ed25519:4b24dc3d13fb8fc66b5d884993ded85752c61e4cd6a66dcab427da757e7cf877": "Check",
+    "ed25519:71f5957a5b22a3578f241a931e0bbb86b19b43121dd817de491e8edad8d1fb59": "TestPerson5"
   },
   "actions": [
+    {
+      "id": "boost-testperson4.social-003",
+      "type": "boost",
+      "author": "ed25519:5f0bb802174a3026f6f5c566a6dbcdc600654c96f762876b4ac0f260399f5e76",
+      "created": "2026-10-31T00:44:16.984903Z",
+      "target": "post-testperson5.social-001",
+      "targetHandle": "testperson5.social",
+      "signature": "VNawfZIobjk8fYo5z0WrBYoboRpSZNUb+zCvInRlIBPKPoj5X02SGqqRwr9+a9/3QWiBDNtj6XuGcoRiqx+gDg=="
+    },
+    {
+      "id": "follow-testperson4.social-002",
+      "type": "follow",
+      "author": "ed25519:5f0bb802174a3026f6f5c566a6dbcdc600654c96f762876b4ac0f260399f5e76",
+      "created": "2026-10-31T00:41:53.127316Z",
+      "target": "ed25519:71f5957a5b22a3578f241a931e0bbb86b19b43121dd817de491e8edad8d1fb59",
+      "signature": "PEhiRuGL8g405/cjCdq0xEoTab/2QrEoJkb+TP2ZaoG/TMzazm+7s5po4Cw/A58YwZUiNU6KYzwdinnPINpMAA=="
+    },
     {
       "id": "post-testperson4.social-001",
       "type": "post",
@@ -23,6 +45,25 @@
       "created": "2026-10-06T06:12:55.433452Z",
       "content": "Hello, I AM TEST4!!!",
       "signature": "qjln6KdysW7VV+Vmgik0N5nF0IVmN4BMFvLdkktrsjIckkYyMqqjQqqdk4hKsHZzB6V5cqZ9jKRYNstPVmMkAw=="
+    },
+    {
+      "id": "post-testperson5.social-001",
+      "type": "post",
+      "author": "ed25519:71f5957a5b22a3578f241a931e0bbb86b19b43121dd817de491e8edad8d1fb59",
+      "created": "2026-10-31T00:40:40.186272Z",
+      "content": "Hello world from Test 5!",
+      "signature": "O0YIvxSJBMt3Y5p9GWGk2srAnBgaQhrCBzEwODI+8UDb6RnsHP2umsi5mi0EBLnzpAMzw7iSrlQErLqnG7MoAQ=="
     }
-  ]
+  ],
+  "boostsByTarget": {
+    "post-testperson5.social-001": {
+      "count": 1,
+      "boosters": [
+        {
+          "author": "ed25519:5f0bb802174a3026f6f5c566a6dbcdc600654c96f762876b4ac0f260399f5e76",
+          "count": 1
+        }
+      ]
+    }
+  }
 }

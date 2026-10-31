@@ -44,8 +44,30 @@ function renderProfile(feed) {
   }
 }
 
-function renderPost(post, indexed, profiles) {
+function formatTime(value) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? value
+    : new Intl.DateTimeFormat(undefined, {
+      dateStyle: "medium",
+      timeStyle: "short",
+    }).format(date);
+}
+
+function renderPost(post, indexed, profiles, boostAction = null) {
   const card = createElement("article", "post-card");
+
+  if (boostAction) {
+    card.append(
+      createElement(
+        "p",
+        "post-boost-context",
+        `↗ ${authorName(boostAction.author, profiles)} boosted · ${formatTime(boostAction.created)}`
+      ),
+      createElement("p", "post-original-label", "Original post")
+    );
+  }
+
   const header = createElement("header", "post-header");
   const author = createElement(
     "h3",
@@ -53,22 +75,22 @@ function renderPost(post, indexed, profiles) {
     authorName(post.author, profiles)
   );
   const timestamp = createElement("time", "post-time", post.created);
-  const parsedDate = new Date(post.created);
-  if (!Number.isNaN(parsedDate.getTime())) {
-    timestamp.dateTime = parsedDate.toISOString();
-    timestamp.textContent = new Intl.DateTimeFormat(undefined, {
-      dateStyle: "medium",
-      timeStyle: "short",
-    }).format(parsedDate);
+  const parsedPostDate = new Date(post.created);
+  if (!Number.isNaN(parsedPostDate.getTime())) {
+    timestamp.dateTime = parsedPostDate.toISOString();
+    timestamp.textContent = formatTime(post.created);
   }
   header.append(author, timestamp);
   card.append(header);
 
   card.append(createElement("p", "post-content", post.content || ""));
 
-  const likes = indexed.likesByTarget.get(post.id) || [];
+  const likes = indexed.likesByTarget.get(boostAction ? boostAction.id : post.id) || [];
   const uniqueLikerKeys = new Set(likes.map((like) => like.author));
   if (uniqueLikerKeys.size > 0) {
+    if (boostAction) {
+      card.append(createElement("p", "post-engagement-label", "Likes on this Boost"));
+    }
     const likerNames = [...uniqueLikerKeys].map((key) => authorName(key, profiles));
     card.append(
       createElement(
@@ -79,8 +101,26 @@ function renderPost(post, indexed, profiles) {
     );
   }
 
-  const replies = indexed.repliesByTarget.get(post.id) || [];
+  const boostSummary = !boostAction && indexed.boostsByTarget.get(post.id);
+  if (boostSummary && boostSummary.count > 0) {
+    const boosterNames = boostSummary.boosters.map(({ author: key, count }) => {
+      const name = authorName(key, profiles);
+      return count > 1 ? `${name} (${count})` : name;
+    });
+    card.append(
+      createElement(
+        "p",
+        "post-boosts",
+        `↗ ${boostSummary.count} ${boostSummary.count === 1 ? "boost" : "boosts"} · ${boosterNames.join(", ")}`
+      )
+    );
+  }
+
+  const replies = indexed.repliesByTarget.get(boostAction ? boostAction.id : post.id) || [];
   if (replies.length > 0) {
+    if (boostAction) {
+      card.append(createElement("p", "post-engagement-label", "Replies to this Boost"));
+    }
     const replyList = createElement("div", "post-replies");
     for (const reply of replies) {
       const item = createElement("p", "reply");
@@ -100,35 +140,62 @@ function renderFeed() {
   if (!currentFeed) return;
 
   postList.replaceChildren();
-  const { posts, likesByTarget, repliesByTarget, follows } = currentFeed.indexed;
+  const {
+    posts,
+    likesByTarget,
+    repliesByTarget,
+    boostsByTarget,
+    boostActionsByTarget,
+    follows,
+  } = currentFeed.indexed;
   const followedKeys = new Set(
     follows
       .filter((follow) => follow.author === currentFeed.profile.publicKey)
       .map((follow) => follow.target)
   );
 
-  const visiblePosts = posts
-    .filter((post) => (
-      feedFilter.value !== "following" || followedKeys.has(post.author)
-    ))
-    .sort((left, right) => left.created.localeCompare(right.created));
-
   if (feedFilter.value === "following" && followedKeys.size === 0) {
     feedStatus.textContent = "This profile does not have any followed authors yet.";
     return;
   }
 
-  if (visiblePosts.length === 0) {
+  const entries = [];
+  for (const post of posts) {
+    const targetBoosts = boostActionsByTarget.get(post.id) || [];
+    if (feedFilter.value === "following") {
+      const followedBoosts = targetBoosts.filter((boost) => followedKeys.has(boost.author));
+      const followsOriginalAuthor = followedKeys.has(post.author);
+      if (followsOriginalAuthor) {
+        entries.push({ post, timestamp: post.created, boostAction: null });
+      }
+      for (const boostAction of followedBoosts) {
+        entries.push({ post, timestamp: boostAction.created, boostAction });
+      }
+    } else {
+      entries.push({ post, timestamp: post.created, boostAction: null });
+      for (const boostAction of targetBoosts) {
+        entries.push({ post, timestamp: boostAction.created, boostAction });
+      }
+    }
+  }
+  entries.sort((left, right) => left.timestamp.localeCompare(right.timestamp));
+
+  if (entries.length === 0) {
     feedStatus.textContent = feedFilter.value === "following"
-      ? "No posts from followed authors are available in this feed yet."
+      ? "No posts from followed authors or boosts by them are available in this feed yet."
       : "No posts are available in this feed yet.";
     return;
   }
 
   feedStatus.textContent = "";
-  for (const post of visiblePosts) {
+  for (const entry of entries) {
     postList.append(
-      renderPost(post, { likesByTarget, repliesByTarget }, currentFeed.profiles)
+      renderPost(
+        entry.post,
+        { likesByTarget, repliesByTarget, boostsByTarget },
+        currentFeed.profiles,
+        entry.boostAction
+      )
     );
   }
 }
@@ -151,6 +218,7 @@ function prepareFeed(data) {
   const postsById = new Map();
   const likesByTarget = new Map();
   const repliesByTarget = new Map();
+  const boostActionsByTarget = new Map();
   const follows = [];
 
   for (const action of actions) {
@@ -160,12 +228,46 @@ function prepareFeed(data) {
       const likes = likesByTarget.get(action.target) || [];
       likes.push(action);
       likesByTarget.set(action.target, likes);
+    } else if (action.type === "boost" && typeof action.target === "string") {
+      const boosts = boostActionsByTarget.get(action.target) || [];
+      boosts.push(action);
+      boostActionsByTarget.set(action.target, boosts);
     } else if (action.type === "reply" && typeof action.inReplyTo === "string") {
       const replies = repliesByTarget.get(action.inReplyTo) || [];
       replies.push(action);
       repliesByTarget.set(action.inReplyTo, replies);
     } else if (action.type === "follow" && typeof action.target === "string") {
       follows.push(action);
+    }
+  }
+
+  const boostsByTarget = new Map();
+  const publishedBoosts = data.boostsByTarget;
+  for (const [target, summary] of Object.entries(
+    publishedBoosts && typeof publishedBoosts === "object"
+      ? publishedBoosts
+      : {}
+  )) {
+    if (
+      summary
+      && Number.isInteger(summary.count)
+      && Array.isArray(summary.boosters)
+    ) {
+      boostsByTarget.set(target, summary);
+    }
+  }
+
+  // Older feeds do not include the publisher's precomputed summary.
+  if (boostsByTarget.size === 0) {
+    for (const [target, boosts] of boostActionsByTarget) {
+      const counts = new Map();
+      for (const boost of boosts) {
+        counts.set(boost.author, (counts.get(boost.author) || 0) + 1);
+      }
+      boostsByTarget.set(target, {
+        count: boosts.length,
+        boosters: [...counts].map(([author, count]) => ({ author, count })),
+      });
     }
   }
 
@@ -176,6 +278,8 @@ function prepareFeed(data) {
       posts: [...postsById.values()],
       likesByTarget,
       repliesByTarget,
+      boostsByTarget,
+      boostActionsByTarget,
       follows,
     },
   };
