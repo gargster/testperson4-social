@@ -236,10 +236,37 @@ a:focus-visible {
   font-weight: 700;
 }
 
-.post-likes {
+.post-likes,
+.post-boosts {
   margin: 0;
   color: var(--muted);
   font-size: 0.8rem;
+}
+
+.post-boosts {
+  margin-top: 0.4rem;
+}
+
+.post-boost-context {
+  margin: 0.65rem 0 0.1rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.post-original-label {
+  margin: 0 0 0.25rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.post-engagement-label {
+  margin: 0.55rem 0 0.15rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
 }
 
 .empty-state {
